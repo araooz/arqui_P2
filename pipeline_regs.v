@@ -22,6 +22,7 @@ endmodule
 
 module id_ex_reg(input  clk, reset,
                  input  clear,
+                 input  [31:0] InstrD,
                  input  RegWriteD,
                  input  [1:0] ResultSrcD,
                  input  MemWriteD,
@@ -39,6 +40,7 @@ module id_ex_reg(input  clk, reset,
                  input  [31:0] ImmExtD,
                  input  [31:0] PCPlus4D,
                  input  [2:0]  Funct3D,
+                 output reg [31:0] InstrE,
                  output reg RegWriteE,
                  output reg [1:0] ResultSrcE,
                  output reg MemWriteE,
@@ -59,6 +61,7 @@ module id_ex_reg(input  clk, reset,
 
   always @(posedge clk) begin
     if (reset || clear) begin
+      InstrE <= 32'b0;
       RegWriteE <= 1'b0;
       ResultSrcE <= 2'b00;
       MemWriteE <= 1'b0;
@@ -77,6 +80,7 @@ module id_ex_reg(input  clk, reset,
       PCPlus4E <= 32'b0;
       Funct3E <= 3'b000;
     end else begin
+      InstrE <= InstrD;
       RegWriteE <= RegWriteD;
       ResultSrcE <= ResultSrcD;
       MemWriteE <= MemWriteD;
@@ -99,6 +103,7 @@ module id_ex_reg(input  clk, reset,
 endmodule
 
 module ex_mem_reg(input  clk, reset,
+                  input  [31:0] InstrE,
                   input  RegWriteE,
                   input  [1:0] ResultSrcE,
                   input  MemWriteE,
@@ -106,6 +111,7 @@ module ex_mem_reg(input  clk, reset,
                   input  [31:0] WriteDataE,
                   input  [4:0]  RdE,
                   input  [31:0] PCPlus4E,
+                  output reg [31:0] InstrM,
                   output reg RegWriteM,
                   output reg [1:0] ResultSrcM,
                   output reg MemWriteM,
@@ -116,6 +122,7 @@ module ex_mem_reg(input  clk, reset,
 
   always @(posedge clk) begin
     if (reset) begin
+      InstrM <= 32'b0;
       RegWriteM <= 1'b0;
       ResultSrcM <= 2'b00;
       MemWriteM <= 1'b0;
@@ -124,6 +131,7 @@ module ex_mem_reg(input  clk, reset,
       RdM <= 5'b0;
       PCPlus4M <= 32'b0;
     end else begin
+      InstrM <= InstrE;
       RegWriteM <= RegWriteE;
       ResultSrcM <= ResultSrcE;
       MemWriteM <= MemWriteE;
@@ -136,12 +144,14 @@ module ex_mem_reg(input  clk, reset,
 endmodule
 
 module mem_wb_reg(input  clk, reset,
+                  input  [31:0] InstrM,
                   input  RegWriteM,
                   input  [1:0] ResultSrcM,
                   input  [31:0] ReadDataM,
                   input  [31:0] ALUResultM,
                   input  [31:0] PCPlus4M,
                   input  [4:0]  RdM,
+                  output reg [31:0] InstrW,
                   output reg RegWriteW,
                   output reg [1:0] ResultSrcW,
                   output reg [31:0] ReadDataW,
@@ -151,6 +161,7 @@ module mem_wb_reg(input  clk, reset,
 
   always @(posedge clk) begin
     if (reset) begin
+      InstrW <= 32'b0;
       RegWriteW <= 1'b0;
       ResultSrcW <= 2'b00;
       ReadDataW <= 32'b0;
@@ -158,6 +169,7 @@ module mem_wb_reg(input  clk, reset,
       PCPlus4W <= 32'b0;
       RdW <= 5'b0;
     end else begin
+      InstrW <= InstrM;
       RegWriteW <= RegWriteM;
       ResultSrcW <= ResultSrcM;
       ReadDataW <= ReadDataM;

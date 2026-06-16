@@ -21,6 +21,7 @@ module datapath(input  clk, reset,
   wire        StallF, StallD, FlushD, FlushE;
   wire [1:0]  ForwardAE, ForwardBE;
 
+  wire [31:0] InstrF;
   wire [31:0] PCF, PCNextF, PCPlus4F;
 
   wire [31:0] InstrD, PCD, PCPlus4D;
@@ -30,6 +31,7 @@ module datapath(input  clk, reset,
   wire        RegWriteE, MemWriteE, JumpE, JalrE, BranchE, ALUSrcE;
   wire [1:0]  ResultSrcE;
   wire [3:0]  ALUControlE;
+  wire [31:0] InstrE;
   wire [31:0] RD1E, RD2E, PCE, ImmExtE, PCPlus4E;
   wire [4:0]  Rs1E, Rs2E, RdE;
   wire [2:0]  Funct3E;
@@ -39,11 +41,13 @@ module datapath(input  clk, reset,
 
   wire        RegWriteM;
   wire [1:0]  ResultSrcM;
+  wire [31:0] InstrM;
   wire [31:0] ALUResultM, WriteDataM, PCPlus4M;
   wire [4:0]  RdM;
 
   wire        RegWriteW;
   wire [1:0]  ResultSrcW;
+  wire [31:0] InstrW;
   wire [31:0] ReadDataW, ALUResultW, PCPlus4W, ResultW;
   wire [4:0]  RdW;
 
@@ -71,6 +75,7 @@ module datapath(input  clk, reset,
   assign ALUResult = ALUResultM;
   assign WriteData = WriteDataM;
   assign MemWrite = MemWriteM;
+  assign InstrF = Instr;
 
   // IF stage
   mux2 #(WIDTH)  pcmux(
@@ -100,7 +105,7 @@ module datapath(input  clk, reset,
     .enable(~StallD),
     .clear(FlushD),
     .PCF(PCF),
-    .InstrF(Instr),
+    .InstrF(InstrF),
     .PCPlus4F(PCPlus4F),
     .PCD(PCD),
     .InstrD(InstrD),
@@ -136,6 +141,7 @@ module datapath(input  clk, reset,
     .clk(clk),
     .reset(reset),
     .clear(FlushE),
+    .InstrD(InstrD),
     .RegWriteD(RegWriteD),
     .ResultSrcD(ResultSrcD),
     .MemWriteD(MemWriteD),
@@ -153,6 +159,7 @@ module datapath(input  clk, reset,
     .ImmExtD(ImmExtD),
     .PCPlus4D(PCPlus4D),
     .Funct3D(funct3),
+    .InstrE(InstrE),
     .RegWriteE(RegWriteE),
     .ResultSrcE(ResultSrcE),
     .MemWriteE(MemWriteE),
@@ -231,6 +238,7 @@ module datapath(input  clk, reset,
   ex_mem_reg  exmemreg(
     .clk(clk),
     .reset(reset),
+    .InstrE(InstrE),
     .RegWriteE(RegWriteE),
     .ResultSrcE(ResultSrcE),
     .MemWriteE(MemWriteE),
@@ -238,6 +246,7 @@ module datapath(input  clk, reset,
     .WriteDataE(WriteDataE),
     .RdE(RdE),
     .PCPlus4E(PCPlus4E),
+    .InstrM(InstrM),
     .RegWriteM(RegWriteM),
     .ResultSrcM(ResultSrcM),
     .MemWriteM(MemWriteM),
@@ -251,12 +260,14 @@ module datapath(input  clk, reset,
   mem_wb_reg  memwbreg(
     .clk(clk),
     .reset(reset),
+    .InstrM(InstrM),
     .RegWriteM(RegWriteM),
     .ResultSrcM(ResultSrcM),
     .ReadDataM(ReadData),
     .ALUResultM(ALUResultM),
     .PCPlus4M(PCPlus4M),
     .RdM(RdM),
+    .InstrW(InstrW),
     .RegWriteW(RegWriteW),
     .ResultSrcW(ResultSrcW),
     .ReadDataW(ReadDataW),
