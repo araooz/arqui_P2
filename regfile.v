@@ -6,13 +6,13 @@ module regfile(input  clk,
 
   reg [31:0] rf[31:0]; 
 
-  // write third port on rising edge of clock (A3/WD3/WE3)
   always @(posedge clk) begin 
-    if (we3) rf[a3] <= wd3; 
+    if (we3 && (a3 != 0)) rf[a3] <= wd3; 
   end
   
-  // read two ports combinationally (A1/RD1, A2/RD2)
-  // register 0 hardwired to 0
-  assign rd1 = (a1 != 0) ? rf[a1] : 0; 
-  assign rd2 = (a2 != 0) ? rf[a2] : 0; 
+  assign rd1 = (a1 == 0) ? 32'b0 :
+               ((we3 && (a1 == a3)) ? wd3 : rf[a1]);
+
+  assign rd2 = (a2 == 0) ? 32'b0 :
+               ((we3 && (a2 == a3)) ? wd3 : rf[a2]);
 endmodule
