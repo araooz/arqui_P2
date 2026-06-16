@@ -8,7 +8,7 @@ module aludec(input  opb5,
   reg [2:0] ALUControl_reg; 
 
   assign RtypeSub = funct7b5 & opb5;  // TRUE for R-type subtract instruction
-  assign ALUControl = ALUControl_reg;1
+  assign ALUControl = ALUControl_reg;
 
   always @* case(ALUOp)
       2'b00:                ALUControl_reg = 3'b000; // addition
