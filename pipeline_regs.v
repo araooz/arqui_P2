@@ -26,8 +26,9 @@ module id_ex_reg(input  clk, reset,
                  input  [1:0] ResultSrcD,
                  input  MemWriteD,
                  input  JumpD,
+                 input  JalrD,
                  input  BranchD,
-                 input  [2:0] ALUControlD,
+                 input  [3:0] ALUControlD,
                  input  ALUSrcD,
                  input  [31:0] RD1D,
                  input  [31:0] RD2D,
@@ -42,8 +43,9 @@ module id_ex_reg(input  clk, reset,
                  output reg [1:0] ResultSrcE,
                  output reg MemWriteE,
                  output reg JumpE,
+                 output reg JalrE,
                  output reg BranchE,
-                 output reg [2:0] ALUControlE,
+                 output reg [3:0] ALUControlE,
                  output reg ALUSrcE,
                  output reg [31:0] RD1E,
                  output reg [31:0] RD2E,
@@ -61,8 +63,9 @@ module id_ex_reg(input  clk, reset,
       ResultSrcE <= 2'b00;
       MemWriteE <= 1'b0;
       JumpE <= 1'b0;
+      JalrE <= 1'b0;
       BranchE <= 1'b0;
-      ALUControlE <= 3'b000;
+      ALUControlE <= 4'b0000;
       ALUSrcE <= 1'b0;
       RD1E <= 32'b0;
       RD2E <= 32'b0;
@@ -78,6 +81,7 @@ module id_ex_reg(input  clk, reset,
       ResultSrcE <= ResultSrcD;
       MemWriteE <= MemWriteD;
       JumpE <= JumpD;
+      JalrE <= JalrD;
       BranchE <= BranchD;
       ALUControlE <= ALUControlD;
       ALUSrcE <= ALUSrcD;
