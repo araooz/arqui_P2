@@ -1,19 +1,61 @@
-# Preparamos registros para la comparación
-addi x1, x0, 5      # PC=0:  x1 = 5
-addi x2, x0, 5      # PC=4:  x2 = 5
+# Programa 4: ISA test Flushing
+# Objetivo: probar flush por branch, jal y jalr.
+# Los NOPs antes de los saltos evitan mezclar esta prueba con dependencias RAW.
 
-# Salto condicional: Como 5 == 5, saltará 12 bytes adelante (PC = 8 + 12 = 20)
-beq x1, x2, 12      # PC=8:  Branch Taken! (PCSrcE = 1, FlushD = 1, FlushE = 1)
+addi x1, x0, 5        # x1 = 5
+addi x2, x0, 5        # x2 = 5
+addi x3, x0, 0        # x3 debe quedarse en 0 si el flush funciona
 
-# --- INSTRUCCIONES BASURA (Deben ser limpiadas por el Flush) ---
-addi x3, x0, 99     # PC=12: x3 = 99 (Se convierte en NOP)
-addi x3, x0, 100    # PC=16: x3 = 100 (Se convierte en NOP)
+nop
+nop
+nop
 
-# --- TARGET DEL BRANCH ---
-add x4, x1, x2      # PC=20: x4 = 5 + 5 = 10 (0xA)
+beq x1, x2, branch_target
+addi x3, x0, 99       # camino incorrecto
+addi x3, x0, 100      # camino incorrecto
 
-# Guardamos el resultado (verás que mem[16] es 10, y x3 nunca fue 99 ni 100)
-sw x4, 16(x0)       # PC=24: mem[16] = 10
+branch_target:
+add x4, x1, x2        # x4 = 10
 
-# Loop infinito para terminar
-end: beq x0, x0, 0  # PC=28
+nop
+nop
+nop
+
+sw x4, 16(x0)         # mem[16] = 10
+sw x3, 20(x0)         # mem[20] = 0 si el flush funciono
+
+jal x6, jal_target
+addi x5, x0, 99       # camino incorrecto
+
+jal_target:
+addi x5, x0, 7        # x5 = 7
+
+nop
+nop
+nop
+
+sw x5, 24(x0)         # mem[24] = 7
+sw x6, 28(x0)         # x6 = PC+4 del jal
+
+addi x7, x0, 120      # direccion de jalr_target
+
+nop
+nop
+nop
+
+jalr x8, 0(x7)
+addi x9, x0, 99       # camino incorrecto
+addi x9, x0, 100      # camino incorrecto
+
+jalr_target:
+addi x9, x0, 8        # x9 = 8
+
+nop
+nop
+nop
+
+sw x9, 32(x0)         # mem[32] = 8
+sw x8, 36(x0)         # x8 = PC+4 del jalr
+
+end:
+beq x0, x0, end
