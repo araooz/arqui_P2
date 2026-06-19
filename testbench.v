@@ -115,6 +115,6 @@ module testbench;
     else
       $display("Pipeline tests failed with %0d errors", total_errors);
 
-    $stop;
+    $finish;
   end
 endmodule
