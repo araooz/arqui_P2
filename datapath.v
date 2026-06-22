@@ -11,7 +11,7 @@ module datapath(input  clk, reset,
                 output [2:0]  funct3,
                 output        funct7b5,
                 output [31:0] PC,
-                input  [31:0] Instr,
+                input  [31:0] InstrRawF,
                 output MemWrite,
                 output [31:0] ALUResult, WriteData, 
                 input  [31:0] ReadData);
@@ -22,7 +22,11 @@ module datapath(input  clk, reset,
   wire [1:0]  ForwardAE, ForwardBE;
 
   wire [31:0] InstrF;
+  wire        CompressedF;
+  wire        IllegalCF;
+
   wire [31:0] PCF, PCNextF, PCPlus4F;
+  wire [31:0] PCIncF;
 
   wire [31:0] InstrD, PCD, PCPlus4D;
   wire [31:0] RD1D, RD2D, ImmExtD;
@@ -75,9 +79,17 @@ module datapath(input  clk, reset,
   assign ALUResult = ALUResultM;
   assign WriteData = WriteDataM;
   assign MemWrite = MemWriteM;
-  assign InstrF = Instr;
+
+  compressed_decoder cdec(
+    .instr_raw(InstrRawF),
+    .instr(InstrF),
+    .compressed(CompressedF),
+    .illegal_c(IllegalCF)
+  );
 
   // IF stage
+  assign PCIncF = CompressedF ? 32'd2 : 32'd4;
+
   mux2 #(WIDTH)  pcmux(
     .d0(PCPlus4F), 
     .d1(PCTargetE), 
@@ -95,7 +107,7 @@ module datapath(input  clk, reset,
 
   adder       pcadd4(
     .a(PCF), 
-    .b(32'd4),
+    .b(PCIncF),
     .y(PCPlus4F)
   ); 
 

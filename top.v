@@ -2,14 +2,15 @@ module top(input  clk, reset,
            output [31:0] WriteData, DataAdr, 
            output MemWrite);
   
-  wire [31:0] PC, Instr, ReadData; 
+  wire [31:0] PC;
+  wire [31:0] InstrRawF;
+  wire [31:0] ReadData; 
   
-  // instantiate processor and memories
   riscvpipeline rvpipe(
     .clk(clk), 
     .reset(reset), 
     .PC(PC), 
-    .Instr(Instr), 
+    .InstrRawF(InstrRawF), 
     .MemWrite(MemWrite), 
     .DataAdr(DataAdr), 
     .WriteData(WriteData), 
@@ -18,7 +19,7 @@ module top(input  clk, reset,
 
   imem imem(
     .a(PC), 
-    .rd(Instr)
+    .rd(InstrRawF)
   ); 
 
   dmem dmem(
@@ -28,4 +29,5 @@ module top(input  clk, reset,
     .wd(WriteData), 
     .rd(ReadData)
   ); 
+
 endmodule
