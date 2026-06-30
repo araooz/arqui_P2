@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-module testbench_e1_final();
+module testbench_e1();
 
   reg clk;
   reg reset;

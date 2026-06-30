@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-module testbench_rvc_final();
+module testbench_rvc();
 
   reg clk;
   reg reset;
