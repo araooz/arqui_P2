@@ -23,10 +23,7 @@ module testbench_rvc();
   localparam TEST_MATMUL_RV32I  = 2;
   localparam TEST_MATMUL_RVC    = 3;
 
-  // 22 stores in rvc_coverage.mem
   localparam [31:0] MASK_COVERAGE = 32'h003fffff;
-
-  // 12 stores in each matmul program
   localparam [31:0] MASK_MATMUL   = 32'h00000fff;
 
   top dut(
@@ -62,7 +59,7 @@ module testbench_rvc();
   task clear_state;
     begin
       for (i = 0; i < 512; i = i + 1)
-        dut.imem.RAM[i] = 16'h0001;   // c.nop / c.addi x0, 0
+        dut.imem.RAM[i] = 16'h0001;
 
       for (i = 0; i < 64; i = i + 1)
         dut.dmem.RAM[i] = 32'b0;

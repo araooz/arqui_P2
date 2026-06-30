@@ -24,10 +24,7 @@ module testbench_e1();
   localparam TEST_STALL    = 3;
   localparam TEST_FLUSH    = 4;
 
-  // prog1_nodep.mem has 10 checked stores.
   localparam [31:0] MASK_NODEP   = 32'h000003ff;
-
-  // The hazard programs use one final checked store each.
   localparam [31:0] MASK_SINGLE  = 32'h00000001;
 
   top dut(
@@ -64,7 +61,7 @@ module testbench_e1();
   task clear_state;
     begin
       for (i = 0; i < 512; i = i + 1)
-        dut.imem.RAM[i] = 16'h0001;   // c.nop / c.addi x0, 0
+        dut.imem.RAM[i] = 16'h0001;
 
       for (i = 0; i < 64; i = i + 1)
         dut.dmem.RAM[i] = 32'b0;
@@ -164,8 +161,6 @@ module testbench_e1();
       start_phase(TEST_STALL, 1, MASK_SINGLE);
       clear_state();
 
-      // The load-use test loads from address 8.
-      // This initialization makes the test independent from previous programs.
       dut.dmem.RAM[2] = 32'd100;
 
       $readmemh("prog3_stall.mem", dut.imem.RAM);
@@ -277,8 +272,6 @@ module testbench_e1();
 
         TEST_STALL: begin
           case (DataAdr)
-            // Some versions of the stall program explicitly store the source value at mem[8].
-            // This store is not the final assertion, so it is logged without marking the phase done.
             32'd8:  log_optional_store("stall setup value");
             32'd12: check_store(0, 32'd12, 32'h000000c8, "stall load-use result");
             default: begin
@@ -291,18 +284,10 @@ module testbench_e1();
 
         TEST_FLUSH: begin
           case (DataAdr)
-            // Branch case:
-            // beq x1, x2 jumps to the target. The wrong-path writes to x3 are flushed.
             32'd16: check_store(0, 32'd16, 32'h0000000a, "flush branch target result");
             32'd20: check_store(1, 32'd20, 32'h00000000, "flush branch wrong-path register");
-
-            // JAL case:
-            // jal skips the wrong-path addi x5, x0, 99 and writes PC+4 into x6.
             32'd24: check_store(2, 32'd24, 32'h00000007, "flush jal target result");
             32'd28: check_store(3, 32'd28, 32'h00000040, "flush jal link");
-
-            // JALR case:
-            // jalr jumps to the address in x7 and writes PC+4 into x8.
             32'd32: check_store(4, 32'd32, 32'h00000008, "flush jalr target result");
             32'd36: check_store(5, 32'd36, 32'h00000070, "flush jalr link");
 
