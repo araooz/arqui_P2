@@ -182,7 +182,7 @@ module testbench_e1_final();
       $display("Running prog4_flush.mem");
       $display("========================================");
 
-      start_phase(TEST_FLUSH, 1, MASK_SINGLE);
+      start_phase(TEST_FLUSH, 6, 32'h0000003f);
       clear_state();
       $readmemh("prog4_flush.mem", dut.imem.RAM);
       reset_cpu();
@@ -291,7 +291,21 @@ module testbench_e1_final();
 
         TEST_FLUSH: begin
           case (DataAdr)
-            32'd20: check_store(0, 32'd20, 32'h00000000, "flush final sw");
+            // Branch case:
+            // beq x1, x2 jumps to the target. The wrong-path writes to x3 are flushed.
+            32'd16: check_store(0, 32'd16, 32'h0000000a, "flush branch target result");
+            32'd20: check_store(1, 32'd20, 32'h00000000, "flush branch wrong-path register");
+
+            // JAL case:
+            // jal skips the wrong-path addi x5, x0, 99 and writes PC+4 into x6.
+            32'd24: check_store(2, 32'd24, 32'h00000007, "flush jal target result");
+            32'd28: check_store(3, 32'd28, 32'h00000040, "flush jal link");
+
+            // JALR case:
+            // jalr jumps to the address in x7 and writes PC+4 into x8.
+            32'd32: check_store(4, 32'd32, 32'h00000008, "flush jalr target result");
+            32'd36: check_store(5, 32'd36, 32'h00000070, "flush jalr link");
+
             default: begin
               $display("[%0t] FAIL unexpected flushing store: DataAdr=%h WriteData=%h",
                        $time, DataAdr, WriteData);
